@@ -313,15 +313,15 @@ abstract class RDD[T] {
 }
 ```
 
-#### Example: Count of specific word in Spark
+### Example: Count of a specific word in Spark
 
-Given an `encyclopedia: RDD[String]`, we can do:
+Given an `encyclopedia: RDD[String]`, we can count how many times "EPFL" appears in `encyclopedia`:
 
 ```scala
 val result = encyclopedia.filter(page => page.contains("EPFL")).count()
 ```
 
-#### Example: Word count in Spark
+### Example: Word count in Spark
 
 ```scala
 val rdd = spark.textFile("hdfs://...")
@@ -331,41 +331,18 @@ val count = rdd.flatMap(line => line.split(" ")) // separate lines into words
                .reduceByKey(_ + _)               // sum up the 1s in the pairs
 ```
 
-#### Creating an RDD
-
-1. Can transform an existing RDD
-2. Populate a brand new RDD from a SparkContext (renamed SparkSession)
-
-The SparkContext object (renamed SparkSession) can be thought of as your handle to the Spark cluster. It represents the connection between the Spark cluster and your running application. It defines a handful of methods which can be used to create and populate a new RDD:
-
-- parallelize: convert a local Scala collection to an RDD (won't really come across this in real codebases with big jobs, since we will usually have the collection in memory, like a Scala list, and we want to create an RDD)
-- textFile: read a text file from HDFS (Hadoop's File System) or a local file system and return an RDD of Strings. Usually used for large data sets.
-
-
 ## Transformations and Actions
 
-Transformers return new collections as results, such as `map`, `filter`, `flatMap`, `groupBy`
-
-```scala
-map(f: A => B): Traversable[B]
-```
-
-Accessors return single values as results, such as `reduce`, `fold`, `reduce`:
-
-```scala
-reduce(op: (A, A) => A): A
-```
-
-- _Transformations_ return new RDDs as results.
-- _Actions_ return a result based on an RDD, and it's either returned or saved to an external storage system (e.g., HDFS)
+- _Transformations_ return new RDDs as results. Examples: `map`, `filter`, `flatMap`, `groupBy`
+- _Actions_ return a result based on an RDD, and it's either returned or saved to an external storage system. Examples: `reduce`, `fold`, `reduce`
 
 Transformations are _lazy_ (delayed execution), and actions are _eager_ (immediate execution). So none of the _transformations_ happen until there is an _action_.
 
 To know if a function is a _transformation_ or an _action_, we look at its return type. If the return type is an RDD, it's a _transformation_, otherwise it's an _action_.
 
-#### Lazy evaluation resulting in efficiency
+### Lazy evaluation resulting in efficiency
 
-Spark will analyze and optimize the chain of operations before executing it. This is a benefit of _lazy_ evaluation. In the code below, as soon as 10 elements of the filtered RDD have been computed, `firstLogsWIthErrors` is done
+Spark will analyze and optimize a chain of operations before executing it. This is a benefit of _lazy_ evaluation. In the code below, as soon as 10 elements of the filtered RDD have been computed, `firstLogsWIthErrors` is done.
 
 ```scala
 val lastYearsLogs: RDD[String] = ...
@@ -383,10 +360,10 @@ val numErrors = lastYearsLogs.map(_.lowercase)
 
 ## Evaluation in Spark
 
-#### Caching and Persistence
+### Caching and Persistence
 
 By default, RDDs are recomputed each time you run an action on them. This can be expensive (in time) if you need to use a dataset more than once.
-To tell Spark to cache an RDD in memory, simply call `persist()` or `cache()` on it. Here is an example:
+To tell Spark to cache an RDD in memory, simply call `persist()` or `cache()` on it:
 
 ```scala
 val lastYearsLogs: RDD[String] = ...
@@ -402,9 +379,9 @@ The `persist()` method can be customized in 5 ways in how data is persisted:
 1. on disk as serialized Java objects (more compact)
 1. both in memory and on disk (spill over to disk to avoid re-computation)
 
-Despite similar-looking API to Scala Collections, the lazy-evaluation of Spark's RDDs are very different than Scala Collections.
+Scala Collections and Spark RDDs have similar-looking APIs. However, Spark RDDs use lazy evaluation while Scala Collections do not (by default)
 
-#### Common pitfall: println
+### Common pitfall: `println` in a cluster
 
 What happens in this scenario?
 
@@ -413,7 +390,6 @@ case class Person(name: String, age: Int)
 val people: RDD[Person] = ...
 people.foreach(println)
 ```
-2067184841
 
 Since `println` is an action with return type of `Unit`, the `println` happens in the cluster (instead of the driver program), and the output is never seen by the user.
 
@@ -422,16 +398,16 @@ Since `println` is an action with return type of `Unit`, the `println` happens i
 
 `foldLeft` and `foldRight` are not parallelizable, so they do not exist for Spark's RDDs. We use `fold`, `reduce`, and `aggregate` instead.
 
-Aggregate signature is `aggregate[B](z: => B)(seqop: (B, A) => B, combop: (B, B) => B): B`
+The `Aggregate` function has a signature of `aggregate[B](z: => B)(seqop: (B, A) => B, combop: (B, B) => B): B`
 
 
 ## Pair RDDs
 
-Pair RDDs is just another name for distributed key-value pairs
+Pair RDDs is just another name for distributed key-value pairs.
 
 In distributed systems, Pair RDDs are used more often then arrays and lists.
 
-#### JSON record as RDD
+### Creating a Pair RDD from a JSON record
 
 ```json
 "definitions": {
@@ -463,22 +439,20 @@ In distributed systems, Pair RDDs are used more often then arrays and lists.
 If we only care about the "address" part of the above record, we can create an RDD for just that part:
 
 ```scala
-RDD[(String, Property)] // 'String is a key representing a city, 'Property' is its corresponding value.
+RDD[(String, Property)] // String is a key representing a city, 'Property' is its corresponding value.
 
 case class Property(street: String, city: String, state: String)
 ```
 
-It might be desirable to group these RDDs by their `city` as the key, so you can do computations on these properties by city.
+We used the `city` as the key. This would be useful if we wanted to group these RDDs by their `city`, so we can do computations on these properties by city.
 
-#### Example creation of Pair RDD
+### Creating a Pair RDD from an RDD
 
-If given `val rdd: RDD[WikipediaPage]`, we can create a pair RDD like this:
+If given `val rdd: RDD[WikipediaPage]`, we can create a pair RDD:
 
 ```scala
 val pairRdd = rdd.map(page => (page.title, page.text))
 ```
-
-The fact that
 
 Unlike a standard RDD, when you have a Pair RDD such as `RDD[(K, V)]`, you get new methods such as:
 
@@ -490,13 +464,15 @@ def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))]
 
 ## Transformations and Actions on Pair RDDs
 
-#### Pair RDD Transformation: groupByKey
+### Pair RDD Transformation: groupByKey
 
-Here is `groupBy` from Scala:
+#### `groupBy` from Scala:
 
 ```scala
 def groupBy[K](f: A => K): Map[K, Traversable[A]]
 ```
+
+Let's group by various ages:
 
 ```scala
 val ages = List(2, 52, 44, 23, 17, 14, 12, 82, 51, 64)
@@ -507,15 +483,15 @@ val grouped = ages.groupBy { age =>
 }
 ```
 
-gives us:
 ```scala
+// Output
 grouped: scala.collection.immutable.Map[String, List[Int]] =
   Map(senior -> List(82),
       adult -> List(52, 44, 23, 51, 64),
       child -> List(2, 17, 14, 12))
 ```
 
-Now let's look at `groupByKey` for Pair RDDs in Spark
+#### `groupByKey` for Pair RDDs in Spark
 
 ```scala
 case class Event(organizer: String, name: String, budget: Int)
@@ -525,14 +501,16 @@ val groupedRdd = eventsRdd.groupByKey()
 groupedRdd.collect().foreach(println)
 ```
 
-This will give us something like:
-
 ```scala
+// Output is something like:
+
 (Prime Sound, CompactBuffer(42000))
 (Sportorg, CompactBuffer(23000, 12000, 1400))
 ```
 
-#### Pair RDD Transformation: reduceByKey
+### Pair RDD Transformation: reduceByKey
+
+We can use `reduceByKey`, which can be thought of as a combination of `groupByKey` and `reduce`-ing on all values per key.
 
 ```scala
 def reduceByKey(func: (V, V) => V): RDD[(K, V)]
@@ -546,13 +524,21 @@ val budgetsRdd = eventsRdd.reduceByKey(_ + _)
 reduceRdd.collect().foreach(println)
 ```
 
+```scala
+// Output is something like:
+
+(Prime Sound, 42000)
+(Sportorg, 36400)
+```
+
+
 ## Joins
 
-#### Provided Sample Data
+### Provided Sample Data
 
 data called "abos":
 
-```
+```scala
 (101, ("Ruetli", AG)),
 (102, ("Brelaz", DemiTarif)),
 (103, ("Gress", DemiTarifVisa)),
@@ -561,7 +547,7 @@ data called "abos":
 
 data called "locations":
 
-```
+```scala
 (101, "Bern"),
 (101, "Thun"),
 (102, "Lausanne"),
@@ -572,15 +558,17 @@ data called "locations":
 (103, "Chur")
 ```
 
-#### Join
+### Join
 
 ```scala
 def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))]
 ```
 
-Join (known as inner join) gives result:
+Doing a join (also known as inner join) gives us:
 
-```
+```scala
+// Output
+
 (101, ((Ruetli, AG), Bern))
 (101, ((Ruetli, AG), Thun))
 (102, ((Brelaz, DemiTarif), Nyon))
@@ -591,7 +579,7 @@ Join (known as inner join) gives result:
 (103, ((Gress, DemiTarifVisa), Zurich))
 ```
 
-#### Left Outer Joins, Right Outer Joins
+### Left Outer Joins, Right Outer Joins
 
 ```scala
 def leftOuterJoin[W](other: RDD[(K, W)]): RDD[(K, (V, Option[W]))]
@@ -605,7 +593,9 @@ val abosWithOptionalLocations = abos.leftOuterJoin(locations)
 abosWithOptionalLocations.collect().foreach(println)
 ```
 
-```
+```scala
+// Output
+
 (101, ((Ruetli, AG), Some(Thun)))
 (101, ((Ruetli, AG), Some(Bern)))
 (102, ((Brelaz, DemiTarif), Some(Geneve)))
@@ -614,14 +604,12 @@ abosWithOptionalLocations.collect().foreach(println)
 (103, ((Gress, DemiTarifVisa), Some(Zurich)))
 (103, ((Gress, DemiTarifVisa), Some(St-Gallen)))
 (103, ((Gress, DemiTarifVisa), Some(Chur)))
-(104, ((Schatten, DemiTarif), Some(None)))  // notice
+(104, ((Schatten, DemiTarif), None))  // notice the None
 ```
 
 ## Shuffling
 
 Shuffling is when data is moved between nodes. This can happen when we do a `groupByKey()`. Moving data around the network like this is extremely slow.
-
-By _reducing_ the data set first, we can reduce the amount of data that's sent over the network during a shuffle.
 
 ```scala
 // slow
@@ -629,7 +617,11 @@ val purchasesPerMonthSlowLarge = purchasesRddLarge.map(p => p.customerId, p.pric
   .groupByKey()
   .map(p => (p._1, (p._2.size, p._2.sum)))
   .count()
+```
 
+By _reducing_ the data set first, we can reduce the amount of data that's sent over the network during a shuffle.
+
+```scala
 // fast
 val purchasesPerMonthFastLarge = purchasesRddLarge.map(p => p.customerId, (1, p.price)))
   .reduceByKey((v1, v2) => (v1._1 + v2._1, v1._2, + v2._2))
@@ -640,7 +632,7 @@ val purchasesPerMonthFastLarge = purchasesRddLarge.map(p => p.customerId, (1, p.
 
 Partitioning can bring substantial performance gains, especially if you can prevent or lower the number of shuffles.
 
-#### Properties of partitions
+### Properties of partitions
 
 - The data within an RDD is split into several partitions.
 - Partitions never span multiple machines.
@@ -649,11 +641,11 @@ Partitioning can bring substantial performance gains, especially if you can prev
 
 Customizing partitioning is only possible when working with Pair RDDs (since partitioning is done based on keys)
 
-#### Hash partitioning
+### Hash partitioning
 
 Attempts to spread data evenly across partitions based on the key
 
-#### Range partitioning
+### Range partitioning
 
 This is for keys that can have an ordering. Tuples with keys in the same range appear in the same machine. For example, if our numbers are 1 to 800, we can have 4 partitions of: [1, 200], [201, 400], [401, 600], [601, 800]
 
@@ -668,11 +660,13 @@ val tunedPartitioner = new RangePartitioner(8, pairs)
 val partitioned = pairs.partitionBy(tunedPartitioner).persist()
 ```
 
-Each time the partitioned RDD is using, the partitioning is re-applied, resulting in unnecessary shuffling. By using `persist` we are telling Spark that once you move the data around in the network and re-partition it, persist it where it is and keep it in memory. The results of `partitionBy` should always be persisted.
+Each time the partitioned RDD is used, the partitioning is re-applied, resulting in unnecessary shuffling. By using `persist` we are telling Spark that once you move the data around in the network and re-partition it, persist it where it is and keep it in memory. The results of `partitionBy` should always be persisted.
 
-#### 2 ways partioners can be passed around the transformation
+### 2 ways partioners can be passed around the transformation
 
-1. __Partitioner from parent RDD__ - Pair RDDs that are the result of a transformation on a _partitioned_ Pair RDD typically is configured to use the hash partitioner that was used to construct it.
+#### 1) __Partitioner from parent RDD__
+
+Pair RDDs that are the result of a transformation on a _partitioned_ Pair RDD is usually configured to use the hash partitioner that was used to construct it.
 
 Operations on Pair RDDs that hold to (and propagate) a partitioner:
 
@@ -688,32 +682,39 @@ reduceByKey      filter (if parent has a partitioner)
 
 all other operations will produce a result without a partitioner.
 
-Notice `map` and `flatMap` are not on the list. This is because `map` and `flatMap` can change the keys in an RDD. For this reason, use `mapValues` instead of `map` whenever possible.
+Notice `map` and `flatMap` are not on otherwise list. This is because `map` and `flatMap` can change the keys in an RDD. For this reason, use `mapValues` instead of `map` whenever possible to avoid unnecessary shuffling.
 
 Operations that may cause a shuffle: `cogroup`, `groupWith`, `join`, `leftOuterJoin`, `rightOuterJoin`, `groupByKey`, `reduceByKey`, `combineByKey`, `distinct`, `intersection`, `repartition`, `coalesce`
 
-2. __Automatically-set partitioners__ - Some operations on RDDs automatically result in an RDD with a known partitioner - for when it makes sense. Examples:
-    - `RangePartitioner` is used when using `sortByKey`
-    - `HashPartitioner` is used when using `groupByKey`
+#### 2) __Automatically-set partitioners__
+
+Some operations on RDDs automatically result in an RDD with a known partitioner, for when it makes sense. Examples:
+
+- `RangePartitioner` is used when using `sortByKey`
+- `HashPartitioner` is used when using `groupByKey`
 
 
 ## Wide vs Narrow Dependencies
 
-__Narrow Dependency__ - Each partition of the parent RDD is used by at most 1 partition of the child RDD
+### Narrow Dependency
+
+Each partition of the parent RDD is used by at most 1 partition of the child RDD
 
 ![Narrow Dependencies](./images/narrowDependencies.png)
 
 Transformations with narrow dependencies: `map`, `mapValues`, `flatMap`, `filter`, `mapPartitions`, `mapPartitionsWithIndex`
 
+### Wide dependency
 
-__Wide Dependency__ - Each partition of the parent RDD may be depended on by multiple child partitions
+Each partition of the parent RDD may be depended on by multiple child partitions
 
 ![Wide Dependencies](./images/wideDependencies.png)
 
 Transformations with narrow dependencies (that may cause a shuffle): `cogroup`, `groupWith`, `join`, `leftOuterJoin`, `rightOuterJoin`, `groupByKey`, `reduceByKey`, `combineByKey`, `distinct`, `intersection`, `repartition`, `coalesce`
 
+### Finding dependencies
 
-#### Dependencies method
+#### `dependencies()`
 
 `dependencies()` returns a sequence of `Dependency` objects, which are the dependencies used by Spark's scheduler to know how this RDD depends on other RDDs.
 
@@ -728,13 +729,13 @@ val pairs = words.Rdd.map(c => (c, 1))
                      .dependencies
 ```
 
-gives something like:
-
 ```scala
+// Output is something like:
+
 pairs: Seq[org.apache.spark.Dependency[_]] = List(org.apache.spark.ShuffleDependency@4294a23d)
 ```
 
-Using `toDebugString()`:
+#### `toDebugString()`
 
 ```scala
 val wordsRdd = sc.parallelize(largeList)
@@ -743,9 +744,9 @@ val pairs = words.Rdd.map(c => (c, 1))
                      .toDebugString
 ```
 
-gives something like:
-
 ```scala
+// Output is something like:
+
 pairs: String =
 (8) ShuffleRDD[219] at groupByKey at <console>:38 []
  +-(8) MapPartitionsRDD[218] at map at <console>:37 []
@@ -757,13 +758,12 @@ The indentations in above output actually shows how Spark groups together these 
 
 ## Structure and Optimization
 
-#### Example of inner join
+### Optimizing Inner Join
 
 If we have:
 
 ```scala
 val demographics = sc.textfile(...) // Pair RDD of (id, demographic)
-
 val finances = sc.textfile(...) // Pair RDD of (id, finances)
 ```
 
@@ -790,7 +790,6 @@ demographics.filter(p => p._2.country == "Switzerland")
             .count
 ```
 
-
 #### Solution 3: Cartesian Product, then filters
 
 ```scala
@@ -810,12 +809,11 @@ cartesian.filter {
 
 Fastest to Slowest: Solution 2, Solution 1, Solution 3
 
-- Takeaways
-    - Cartesian product (Solution 3) is extremely slow. Use inner join instead.
-    - Filtering data first before join (Solution 2) is much faster than joining then filtering (Solution 1)
+- Cartesian product (Solution 3) is _extremely_ slow. Use inner join instead.
+- Filtering data first before join (Solution 2) is much faster than joining then filtering (Solution 1)
 
 
-#### Types of Data
+### Types of Data
 
 - Structured: Database tables
 - Semi-Structured: JSON, XML - these types of data are self-describing. No rigid structure to them.
@@ -826,32 +824,27 @@ For structured data, Spark may be able to make optimizations for you (such as pu
 
 ## Spark SQL
 
-Spark SQL is a library implemented on top of Spark
+Spark SQL is a library implemented on top of Spark.
 
-Benefits:
+#### Benefits
+
 - __mix SQL queries with Scala__ - sometimes it's more desirable to express a computation in SQL syntax instead of functional APIs, and vice versa.
 - __high performance__ - we get optimizations we're used to from databases, into our Spark jobs.
 - __support new data sources such as semi-structured data and external databases__
 
 
-3 main APIs it adds
+#### 3 main APIs it adds
 - SQL literal syntax
 - DataFrames
 - Datasets
 
-2 specialized backend components
+#### 2 specialized backend components
 - Catalyst - a query optimizer.
 - Tungsten - off-heap serializer.
 
 More info on all this later.
 
-#### DataFrame
-
-A _DataFrame_ is coneceptually equivalent to a table in a relational database.
-
-DataFrames are distributed collections of records, with a known schema.
-
-#### SparkSession
+### SparkSession
 
 `SparkSession` is the newer version of `SparkContext`. This is how to create a `SparkSession`:
 
@@ -865,52 +858,54 @@ val spark = SparkSession
   .getOrCreate()
 ```
 
-#### Creating DataFrames
+### Creating DataFrames
+
+A _DataFrame_ is conceptually equivalent to a table in a relational database.
+
+DataFrames are distributed collections of records, with a known schema.
 
 There are 2 ways to create data frames:
 
 1. From an existing RDD - either with schema inference, or with an explicit schema
 1. Reading a data source from file - common structured or semi-structured formats such as JSON
 
-#### Method 1: Create an RDD from an existing RDD:
+#### Method 1: Use an existing RDD:
 
 ```scala
 val tupleRDD = ... // Assume RDD[(Int, String, String, String)]
 val tupleDF = tupleRDD.toDF("id", "name", "city", "country") // column names
 ```
 
-Not passing column names to `toDF`, then Spark will assign numbers as attributes (column names) to your DataFrame
+If you don't pass column names to `toDF`, then Spark will assign numbers as attributes (column names).
 
-However if you have an RDD containing some kind of case class instance, then Spark can infer the attributes from the case class's fields:
+However, if you have an RDD containing some kind of case class instance, then Spark can infer the attributes from the case class's fields:
 
 ```scala
 case class Person(id: Int, name: String, city: String)
 val peopleRDD = ... // Assume RDD[Person]
-val peopleDF = peopleRDD.toDF
+val peopleDF = peopleRDD.toDF // Attributes (column names) will be inferred
 ```
 
-Another option is to use an explicit schema, but the process is omitted here as it's somewhat complex.
+Another option is to use an explicit schema, but the process is omitted here as it's complex.
 
-#### Method 2: Reading a data source from file
+#### Method 2: Use a data source from file
 
 ```scala
 // 'spark' represents the SparkSession object
 val df = spark.read.json("examples/src/main/resources/people.json")
 ```
 
-It will build a data frame with a schema for the json we read.
+Spark SQL can directly create `DataFrame`s from the following semi-structured/structured data: `JSON`, `CSV`, `Parquet` (a serialized big data format), `JDBC`, + more using [DataFrameReader](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader)
 
-Semi-structured/Structured data sources Spark SQL can directly create DataFrames from: `JSON`, `CSV`, `Parquet` (a serialized big data format), `JDBC`, + more at http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.DataFrameReader
+### Creating Temp Views
 
-#### Creating Temp Views
-
-Assuming we have a `DataFrame` called peopleDF, we just have to register our `DataFrame` as a temporary SQL view first:
+Assuming we have a `DataFrame` called `peopleDF`, we just have to register our `DataFrame` as a temporary SQL view first:
 
 ```scala
 peopleDF.createOrReplaceTempView("people")
 ```
 
-This registers the `DataFrame` as an SQL temporary view. It essentially gives a name to our DataFrame in SQL so we can refer to it in an `SQL FROM` statement. Now we can do:
+This registers the `DataFrame` as an SQL temporary view. It essentially gives a name to our DataFrame in SQL so we can refer to it in an SQL `FROM` statement:
 
 ```scala
 val adultsDF = spark.sql("SELECT * FROM people WHERE age > 17")
@@ -922,6 +917,8 @@ The SQL statements available are basically what's available in HiveQL.
 ## Data Frames
 
 DataFrames API is similar to SQL, in that it has `select`, `where`, `limit`, `orderBy`, `groupBy`, `join`, etc.
+
+### Spark SQL vs Data Frames API
 
 Given:
 
@@ -948,18 +945,18 @@ val sydneyEmployeesDF = employeeDF.select("id", "lname")
                                   .orderBy("id")
 ```
 
-#### Seeing our data
+### Seeing our data
 
 - `show()` pretty-prints DataFrame in tabular form, showing first 20 elements
 - `printSchema()` - prints the schema of your DataFrame in tree format
 
-#### 3 ways to select a column
+### 3 ways to select a column
 
-1. Using $-notation as `df.filter($"age" > 18)`. Requires `import spark.implicits._` to use $-notation.
-1. Referring to the Dataframe: `df.filter(df("age") > 18)`
-1. Using SQL query string: `def.filter("age > 18")`
+1. Use $-notation as `df.filter($"age" > 18)`. Requires `import spark.implicits._` to use $-notation.
+1. Referr to the Dataframe: `df.filter(df("age") > 18)`
+1. Use SQL query string: `def.filter("age > 18")`
 
-#### Working with missing values
+### Working with missing values
 
 Dropping records with unwanted values:
 
@@ -968,11 +965,12 @@ Dropping records with unwanted values:
 - `drop(Array("id", "name"))` drops rows that contain `null` or `NaN` values in the specified columns and returns a new `DataFrame`
 
 Replacing unwanted values:
+
 - `fill(0)` replaces all occurrences of `null` or `NaN` in __numeric columns__ with a specified value and returns a new `DataFrame`
 - `fill(Map("minBalance" -> 0))` replaces all occurrences of `null` or `NaN` in specified column with specified value and returns a new `DataFrame`
 - `replace(Array("id"), Map(1234 -> 8923))` replaces specified value (1234) in specified column (id) with specified replacement value (8923) and returns a new `DataFrame`
 
-#### Common actions on DataFrames
+### Common actions on DataFrames
 
 Like RDDs, DataFrames also have their own set of actions:
 
@@ -985,35 +983,35 @@ show(): Unit // displays the top 20 rows of DataFrame in a tabular form
 take(n: Int): Array[Row] // returns the first n rows in the DataFrame
 ```
 
-#### Joins on DataFrames
+### Joins on DataFrames
 
 Joins on DataFrames are similar to those on Pair RDDs, with 1 major difference: since DataFrames aren't key/value pairs, we must specify which columns to join on.
 
-Examples of joins: `inner`, `outer`, `left_outer`, `right_outer`, `leftsemi`:
+Examples of joins - `inner`, `outer`, `left_outer`, `right_outer`, `leftsemi`:
 
 ```scala
 df1.join(df2, $"df1.id" === $"df2.id")                // inner join
 df1.join(df2, $"df1.id" === $"df2.id", "right_outer") // right_outer join
 ```
 
-#### Optimizations on DataFrames: Catalyst
+### Optimizations on DataFrames: Catalyst
 
 Compiles Spark SQL programs down to an RDD.
 
-- __Reorders operations__ - for example, tries to do `filter`s as early as possible
-- __Reduces the amount of data we must read__ - skips reading in, serializing, and sending around parts of the data that aren't needed for our computation (Example: a Scala object with many fields - Catalyst will only send around the relevant columns of the object)
-- __Pruning unneeded partitions__ - Analyzes DataFrame and filter operations to figure out and skip partitions that aren't needed in our computation
+- __Reorders operations__ - for example, tries to do `filter`s as early as possible.
+- __Reduces the amount of data we must read__ - skips reading in, serializing, and sending around parts of the data that aren't needed for our computation (Example: a Scala object with many fields - Catalyst will only send around the relevant columns of the object).
+- __Pruning unneeded partitions__ - Analyzes `DataFrame` and filter operations to figure out and skip partitions that aren't needed in our computation.
 
-#### Optimizations on DataFrames: Tungsten
+### Optimizations on DataFrames: Tungsten
 
 Tungsten is
-- __highly-specialized data encoder__ - since our data types are restricted to Spark SQL data types, Tungsten can optimize encoding by using this schema information
+- __highly-specialized data encoder__ - since our data types are restricted to Spark SQL data types, Tungsten can optimize encoding by using this schema information.
 - __column-based storage__ - this is common for databases. Since most operations on tables are done on columns (instead of rows), it's more efficient to store data by grouping column data together.
 - __encodes data off-heap__ - so it's free from garbage collection overhead.
 
-#### Limitations of DataFrames
+### Limitations of DataFrames
 
-1. Data frames are untyped (unlike RDDs). Your code may compile, but you may get a runtime exception if you try to run a query on a column that doesn't exist.
+1. `DataFrame`s are untyped (unlike RDDs). Your code may compile, but you may get a runtime exception if you try to run a query on a column that doesn't exist.
 1. If your unstructured data cannot be reformulated to adhere to some kind of schema, it would be better to use RDDs
 
 
@@ -1030,8 +1028,9 @@ type DataFrame = Dataset[Row] // DataFrames are actually Datasets of type: Row
 - Datasets require structured or semi-structured data.
 
 
-- DataSets vs DataFrames: you get type information using DataSets. Can now use higher-order functions like `map`, `flatMap`, `filter` that datasets get from RDDs.
-- DataSets vs RDDs: You get more optimizations than RDDs since `Catalyst` works on DataSets.
+DataSets vs DataFrames: you get type information using DataSets. Can now use higher-order functions like `map`, `flatMap`, `filter` that datasets get from RDDs.
+
+DataSets vs RDDs: You get more optimizations than RDDs since `Catalyst` works on DataSets.
 
 Mixing APIs example, assuming `listingsDS` is of type `Dataset[Listing]`:
 
@@ -1040,37 +1039,41 @@ listingsDS.groupByKey(l => l.zip)        // from RDD API: groupByKey
           .agg(avg($"price").as[Double]) // from our DataFrame API
 ```
 
-Above, the types match up since everything is a `dataset`.
+The types match up since everything is a `dataset`.
 
 
-#### Creating a Dataset
+### Creating a Dataset
+
+#### Create `dataset` from a `DataFrame`
 
 ```scala
 import spark.implicits._
 myDF.toDS // creates a new dataset from a dataframe
 ```
 
-or, if we define a case class who's structure, names, and types all match up with "people.json", then we can read this file into a dataset, perfectly typed:
+#### Create `dataset` from JSON
+
+If we define a case class who's structure, names, and types all match up with "people.json", then we can read this file into a dataset, perfectly typed:
 
 ```scala
 val myDS = spark.read.json("people.json").as[Person]
 ```
 
-Create `dataset` from `RDD`:
+#### Create `dataset` from `RDD`
 
 ```scala
 import spark.implicits._
 myRDD.toDS
 ```
 
-Create `dataset` from Scala type:
+#### Create `dataset` from Scala type
 
 ```scala
 import spark.implicits._
 List("yay", "ohnoes", "hooray!").toDS
 ```
 
-#### Typed Columns
+### Typed Columns
 
 `datasets` used typed columns, so the following error could happen:
 
@@ -1133,22 +1136,22 @@ keyValuesDS.groupByKey(pair => pair._1)
 
 The above solution would work, except that it's missing Encoders
 
-#### Encoders
+### Encoders
 
-Encoers convert your data between JVM objects and Spark SQL's specialized internal representation. Encoders are required by all Datasets. They generate custom bytecode for serialization and deserialization of your data.
+Encoders convert your data between JVM objects and Spark SQL's specialized internal representation. Encoders are required by all Datasets. They generate custom bytecode for serialization and deserialization of your data.
 
 Two ways to introduce encoders:
-1. __Automatically__ (generally the case) via implicits from a `SparkSession`. Just `import spark.implicits._`
-1. __Explicitly__ via `org.apache.spark.sql.Encoders` which contains a large selection of methods for creating `Encoder`s from Scala primitive types, `Product`s, tuples
+1. __Automatically__ (generally the case) via implicits from a `SparkSession`. Just do  `import spark.implicits._`
+1. __Explicitly__ via `org.apache.spark.sql.Encoders` which contains a large selection of methods for creating `Encoder`s from Scala primitive types, `Product`s, tuples.
 
-Now to our `strConcat` function from above, we add these 2 functions:
+We _explicitly_ add encoders to our `strConcat` function above, by adding these 2 functions:
 
 ```scala
 override def bufferEncoder: Encoder[String] = Encoders.STRING
 override def outputEncoder: Encoder[String] = Encoders.STRING
 ```
 
-#### When to use Datasets vs DataFrames vs RDDs
+### When to use Datasets vs DataFrames vs RDDs
 
 - Use Datasets when
     - you have structured/semi-structured data
