@@ -9,7 +9,7 @@
     - [3 ways to create RDDs](#3-ways-to-create-rdds)
     - [Transformations on RDDs](#transformations-on-rdds)
     - [Actions on RDDs](#actions-on-rdds)
-- [Creating Data Frames](#data-frames)
+- [Creating Data Frames](#creating-data-frames)
 - [YouTube References](#youtube-references)
 
 [Coursera tutorial](#coursera-tutorial)
@@ -37,47 +37,43 @@
 
 Spark is an open source, scalable tool for parallel-processing.
 
-Spark is polygot. Spark code can be written in Scala (most popular), Java, Python, R, and Spark SQL. It provides high-level APIs for these languages.
+Spark is polygot: code can be written in Scala (most popular), Java, Python, R, and Spark SQL. It provides high-level APIs for these languages.
 
 ![Spark Architecture](./images/sparkArchitecture.png)
 
 - __Driver program__ - The code you're writing behaves as a "driver program". The interactive shell you're writing code in is a sample driver program.
-- __Cluster manager__ - manages various jobs. Sample cluster managers:
-    - Spark Standalone Cluster
-    - Apache Mesos
-    - Hadoop Yarn
-    - Kubernetes
+- __Cluster manager__ - manages various jobs. Sample cluster managers: Spark Standalone Cluster, Apache Mesos, Hadoop Yarn, Kubernetes
 - __Worker nodes__ - they execute a task and return it to the "Spark context". They provide in-memory storage for cached RDDs (explained below)
 
 
-## Resilient Distributed Datasets (RDD)
+## Resilient Distributed Dataset (RDD)
 
 RDDs are the fundamental data structure of Spark.
 
-#### [3 ways to create RDDs](https://youtu.be/GFC2gOL1p9k?t=794)
+### [3 ways to create RDDs](https://youtu.be/GFC2gOL1p9k?t=794)
 
-[1) parallelize an already existing collection in a driver program](https://youtu.be/GFC2gOL1p9k?t=817)
+[1) Parallelize a collection](https://youtu.be/GFC2gOL1p9k?t=817)
 
 ```scala
 val myFirstRDD = sc.parallelize(List("spark", "scala", "hadoop"))
 ```
 
-[2) refer a data set in an external storage system](https://youtu.be/GFC2gOL1p9k?t=845)
+[2) Use a data set in an external storage system](https://youtu.be/GFC2gOL1p9k?t=845)
 
 ```scala
 val textRDD = sc.textFile("/user/cloudera/data.txt")
 ```
 
-[3) create an RDD from already existing RDDs](https://youtu.be/GFC2gOL1p9k?t=870)
+[3) Create an RDD from already existing RDDs](https://youtu.be/GFC2gOL1p9k?t=870)
 
-Using `textRDD` from above, we can write:
+Using `textRDD` from above:
 
 ```scala
 val newRDD = textRDD.filter(x => x.contains("spark"))
 ```
 
 
-#### [Transformations on RDDs](https://youtu.be/GFC2gOL1p9k?t=908)
+### [Transformations on RDDs](https://youtu.be/GFC2gOL1p9k?t=908)
 
 Function: `map`
 
@@ -129,11 +125,9 @@ Array(6, 8, 7, 9, 5)
 ```
 
 
-## [Actions on RDDs](https://youtu.be/GFC2gOL1p9k?t=1204)
+### [Actions on RDDs](https://youtu.be/GFC2gOL1p9k?t=1204)
 
 [Actions are Spark RDD operations that give non-RDD values](https://www.youtube.com/watch?v=GFC2gOL1p9k)
-
-The values of actions are stored to drivers or external storage systems
 
 Function: `reduce`
 
@@ -188,7 +182,7 @@ b.foreachPartition(x => println(x.reduce(_ + _)))
 
 ## [Creating Data Frames](https://youtu.be/GFC2gOL1p9k?t=1750)
 
-#### Create a Data Frame from a List
+### [Create a Data Frame from a List](https://youtu.be/GFC2gOL1p9k?t=1759)
 
 ```scala
 List(1, "mobile", 50000), (2, "shoes", 4500), (3, "TV", 70000))
@@ -211,12 +205,12 @@ productDF.show()
 ```
 
 
-#### [Create DataFrame from JSON file](https://youtu.be/GFC2gOL1p9k?t=1826)
+### [Create a Data Frame from a JSON file](https://youtu.be/GFC2gOL1p9k?t=1826)
 
 
 ```scala
 val df = spark.read.json("/student1.json")
-df.printSchema()
+df.show()
 ```
 
 ```scala
@@ -265,7 +259,7 @@ df.select("name").show()
 +------+
 ```
 
-Let's `filter` for age greater than 18
+Let's `filter` for age greater than 18:
 
 ```scala
 df.filter($"age" >= 18).show()
@@ -287,7 +281,7 @@ df.filter($"age" >= 18).show()
 
 #### References used in Tutorial
 
-- [Youtube: Apache Spark Tutorial | Spark Tutorial for Beginners | Spark Big Data | Intellipaat](https://www.youtube.com/watch?v=GFC2gOL1p9k) - the first 33:20 of video had great examples. The rest was skipped since it taught very specific concepts with a mediocre explanation.
+- [Youtube: Apache Spark Tutorial | Spark Tutorial for Beginners | Spark Big Data | Intellipaat](https://www.youtube.com/watch?v=GFC2gOL1p9k) - 0:00 to 33:20 was great. The rest was skipped since it taught very specific concepts with a mediocre explanation.
 
 #### References - Deprecated
 
@@ -1171,4 +1165,4 @@ override def outputEncoder: Encoder[String] = Encoders.STRING
 
 ## References
 
-[Coursera: Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing tutorial, of which notes were summarized in this repo.
+[Coursera: Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing tutorial that this repo is based on.
