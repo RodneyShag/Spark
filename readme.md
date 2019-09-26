@@ -2,34 +2,31 @@
     <img src="images/spark_logo.png">
 </p>
 
-[IntelliPath tutorial](#intellipath-tutorial)
-
-- [Architecture](#architecture)
-- [Resilient Distributed Dataset (RDD)](#resilient-distributed-dataset-rdd)
-    - [3 ways to create RDDs](#3-ways-to-create-rdds)
-    - [Transformations on RDDs](#transformations-on-rdds)
-    - [Actions on RDDs](#actions-on-rdds)
-- [Creating Data Frames](#creating-data-frames)
-- [YouTube References](#youtube-references)
-
-[Coursera tutorial](#coursera-tutorial)
-
-- [Introduction](#introduction)
-- [Resilient Distributed Datasets (RDDs)](#resilient-distributed-datasets-rdds)
-- [Transformations and Actions](#transformations-and-actions)
-- [Evaluation in Spark](#evaluation-in-spark)
-- [Reduction Operations](#reduction-operations)
-- [Pair RDDs](#pair-rdds)
-- [Transformations and Actions on Pair RDDs](#transformations-and-actions-on-pair-rdds)
-- [Joins](#joins)
-- [Shuffling](#shuffling)
-- [Partitioning](#partitioning)
-- [Wide vs Narrow Dependencies](#wide-vs-narrow-dependencies)
-- [Structure and Optimization](#structure-and-optimization)
-- [Spark SQL](#spark-sql)
-- [Data Frames](#data-frames)
-- [Datasets](#datasets)
-- [References](#references)
+- [IntelliPath tutorial](#intellipath-tutorial)
+    - [Architecture](#architecture)
+    - [Resilient Distributed Dataset (RDD)](#resilient-distributed-dataset-rdd)
+        - [3 ways to create RDDs](#3-ways-to-create-rdds)
+        - [Transformations on RDDs](#transformations-on-rdds)
+        - [Actions on RDDs](#actions-on-rdds)
+    - [Creating Data Frames](#creating-data-frames)
+    - [References (Youtube)](#references-youtube)
+- [Coursera tutorial](#coursera-tutorial)
+    - [Introduction](#introduction)
+    - [Resilient Distributed Datasets (RDDs)](#resilient-distributed-datasets-rdds)
+    - [Transformations and Actions](#transformations-and-actions)
+    - [Evaluation in Spark](#evaluation-in-spark)
+    - [Reduction Operations](#reduction-operations)
+    - [Pair RDDs](#pair-rdds)
+    - [Transformations and Actions on Pair RDDs](#transformations-and-actions-on-pair-rdds)
+    - [Joins](#joins)
+    - [Shuffling](#shuffling)
+    - [Partitioning](#partitioning)
+    - [Wide vs Narrow Dependencies](#wide-vs-narrow-dependencies)
+    - [Structure and Optimization](#structure-and-optimization)
+    - [Spark SQL](#spark-sql)
+    - [Data Frames](#data-frames)
+    - [Datasets](#datasets)
+    - [References](#references)
 
 # IntelliPath tutorial
 
@@ -277,7 +274,7 @@ df.filter($"age" >= 18).show()
 ```
 
 
-## Youtube References
+## References (YouTube)
 
 #### References used in Tutorial
 
@@ -1091,7 +1088,7 @@ To create a `TypedColumn`, we can rewrite it as `$"price".as[Double]` to give th
 - __Untyped transformations__ - exist in `DataFrame`s and `DataSet`s
 - __Typed transformations__ - exist in `Dataset`s. Typed variants of many `DataFrame` transformations, and additional transformations such as RDD-like higher-order functions like `map`, `flatMap`, etc.
 
-#### Aggregators
+### Aggregators
 
 Aggregators is a class that helps you generically aggregate data, kind of like the `aggregate` method in RDDs.
 
@@ -1134,7 +1131,7 @@ keyValuesDS.groupByKey(pair => pair._1)
            .agg(strConcat.as[String]).show
 ```
 
-The above solution would work, except that it's missing Encoders
+The above solution now needs Encoders for it to work.
 
 ### Encoders
 
@@ -1168,4 +1165,4 @@ override def outputEncoder: Encoder[String] = Encoders.STRING
 
 ## References
 
-[Coursera: Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing tutorial that this repo is based on.
+[Coursera: Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing course. This repo is based on the course's lecture videos.
