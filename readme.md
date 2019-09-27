@@ -10,7 +10,7 @@
         - [Actions on RDDs](#actions-on-rdds)
     - [Creating Data Frames](#creating-data-frames)
     - [References (Youtube)](#references-youtube)
-- [Tutorial from Coursera](#coursera-tutorial-from-coursera)
+- [Tutorial from Coursera](#tutorial-from-coursera)
     - [Introduction](#introduction)
     - [Resilient Distributed Datasets (RDDs)](#resilient-distributed-datasets-rdds)
     - [Transformations and Actions](#transformations-and-actions)
