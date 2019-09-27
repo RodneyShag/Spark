@@ -2,7 +2,7 @@
     <img src="images/spark_logo.png">
 </p>
 
-- [IntelliPath tutorial](#intellipath-tutorial)
+- [Tutorial from IntelliPath](#tutorial-from-intellipath)
     - [Architecture](#architecture)
     - [Resilient Distributed Dataset (RDD)](#resilient-distributed-dataset-rdd)
         - [3 ways to create RDDs](#3-ways-to-create-rdds)
@@ -10,7 +10,7 @@
         - [Actions on RDDs](#actions-on-rdds)
     - [Creating Data Frames](#creating-data-frames)
     - [References (Youtube)](#references-youtube)
-- [Coursera tutorial](#coursera-tutorial)
+- [Tutorial from Coursera](#coursera-tutorial-from-coursera)
     - [Introduction](#introduction)
     - [Resilient Distributed Datasets (RDDs)](#resilient-distributed-datasets-rdds)
     - [Transformations and Actions](#transformations-and-actions)
@@ -28,7 +28,7 @@
     - [Datasets](#datasets)
     - [References](#references)
 
-# IntelliPath tutorial
+# [Tutorial from IntelliPath](https://www.youtube.com/watch?v=GFC2gOL1p9k)
 
 ## [Architecture](https://youtu.be/GFC2gOL1p9k?t=549)
 
@@ -286,7 +286,8 @@ df.filter($"age" >= 18).show()
 - [YouTube: Intro to Apache Spark for Java and Scala Developers - Ted Malaska (Cloudera)](https://www.youtube.com/watch?v=x8xXXqvhZq8) - Too high-level and slightly off-topic
 
 
-# Coursera Tutorial
+
+# [Tutorial from Coursera](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala)
 
 ## Introduction
 
