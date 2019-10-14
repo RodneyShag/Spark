@@ -2,7 +2,6 @@
     <img src="images/spark_logo.png">
 </p>
 
-- [Intended Learning Strategy](#intended-learning-strategy)
 - [Tutorial from IntelliPath](#tutorial-from-intellipath)
     - [Architecture](#architecture)
     - [Resilient Distributed Dataset (RDD)](#resilient-distributed-dataset-rdd)
@@ -28,11 +27,8 @@
     - [Datasets](#datasets)
 - [References](#references)
 
-# Intended Learning Strategy
 
-This repo is a concise summary and replacement of the Spark tutorials by IntelliPath and Coursera.
-
-Read this repo linearly from top to bottom. Although this repo provides hyperlinks to other tutorials, you do not need to click through the hyperlinks to learn Spark. They're provided just in case you need more information about a topic.
+This repo is a concise summary and _replacement_ of the tutorials by IntelliPath and Coursera. Using the hyperlinks below is optional.
 
 
 # [Tutorial from IntelliPath](https://www.youtube.com/watch?v=GFC2gOL1p9k)
