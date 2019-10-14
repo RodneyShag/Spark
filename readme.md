@@ -2,6 +2,7 @@
     <img src="images/spark_logo.png">
 </p>
 
+- [Intended Learning Strategy](#intended-learning-strategy)
 - [Tutorial from IntelliPath](#tutorial-from-intellipath)
     - [Architecture](#architecture)
     - [Resilient Distributed Dataset (RDD)](#resilient-distributed-dataset-rdd)
@@ -9,7 +10,6 @@
         - [Transformations on RDDs](#transformations-on-rdds)
         - [Actions on RDDs](#actions-on-rdds)
     - [Creating Data Frames](#creating-data-frames)
-    - [References (Youtube)](#references-youtube)
 - [Tutorial from Coursera](#tutorial-from-coursera)
     - [Introduction](#introduction)
     - [Resilient Distributed Datasets (RDDs)](#resilient-distributed-datasets-rdds)
@@ -26,7 +26,14 @@
     - [Spark SQL](#spark-sql)
     - [Data Frames](#data-frames)
     - [Datasets](#datasets)
-    - [References](#references)
+- [References](#references)
+
+# Intended Learning Strategy
+
+This repo is a concise summary and replacement of the Spark tutorials by IntelliPath and Coursera.
+
+Read this repo linearly from top to bottom. Although this repo provides hyperlinks to other tutorials, you do not need to click through the hyperlinks to learn Spark. They're provided just in case you need more information about a topic.
+
 
 # [Tutorial from IntelliPath](https://www.youtube.com/watch?v=GFC2gOL1p9k)
 
@@ -272,19 +279,6 @@ df.filter($"age" >= 18).show()
 |  19|Serena|
 +----+------+
 ```
-
-
-## References (YouTube)
-
-#### References used in Tutorial
-
-- [Youtube: Apache Spark Tutorial | Spark Tutorial for Beginners | Spark Big Data | Intellipaat](https://www.youtube.com/watch?v=GFC2gOL1p9k) - 0:00 to 33:20 was great. The rest was skipped since it taught very specific concepts with a mediocre explanation.
-
-#### References - Deprecated
-
-- [YouTube: What is Apache Spark? | Introduction to Apache Spark | Apache Spark Certification | Edureka](https://www.youtube.com/watch?v=VSbU7bKfNkA&list=PL9ooVrP1hQOGyFc60sExNX1qBWJyV5IMb) - Mediocre overview.
-- [YouTube: Intro to Apache Spark for Java and Scala Developers - Ted Malaska (Cloudera)](https://www.youtube.com/watch?v=x8xXXqvhZq8) - Too high-level and slightly off-topic
-
 
 
 # [Tutorial from Coursera](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala)
@@ -1164,6 +1158,15 @@ override def outputEncoder: Encoder[String] = Encoders.STRING
     - you need to fine-tune and manage low-level details of RDD computations
     - you have complex data types that cannot be serialized with `Encoder`s
 
-## References
 
-[Coursera: Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing course. This repo is based on the course's lecture videos.
+# References
+
+#### References - Used in this Repo
+
+- YouTube: [Apache Spark Tutorial | Spark Tutorial for Beginners | Spark Big Data | Intellipaat](https://www.youtube.com/watch?v=GFC2gOL1p9k) - 0:00 to 33:20 was great. The rest was skipped since it taught very specific concepts with a mediocre explanation.
+- Coursera: [Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing course. This repo is based on the course's lecture videos.
+
+#### References - Deprecated
+
+- [YouTube: What is Apache Spark? | Introduction to Apache Spark | Apache Spark Certification | Edureka](https://www.youtube.com/watch?v=VSbU7bKfNkA&list=PL9ooVrP1hQOGyFc60sExNX1qBWJyV5IMb) - Mediocre overview.
+- [YouTube: Intro to Apache Spark for Java and Scala Developers - Ted Malaska (Cloudera)](https://www.youtube.com/watch?v=x8xXXqvhZq8) - Too high-level and slightly off-topic.
