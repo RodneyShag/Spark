@@ -941,8 +941,8 @@ val sydneyEmployeesDF = employeeDF.select("id", "lname")
 ### 3 ways to select a column
 
 1. Use $-notation as `df.filter($"age" > 18)`. Requires `import spark.implicits._` to use $-notation.
-1. Referr to the Dataframe: `df.filter(df("age") > 18)`
-1. Use SQL query string: `def.filter("age > 18")`
+1. Refer to the Dataframe: `df.filter(df("age") > 18)`
+1. Use SQL query string: `df.filter("age > 18")`
 
 ### Working with missing values
 
