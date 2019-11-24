@@ -1215,9 +1215,20 @@ spark.udf.register("myUpper", (input: String) => input.toUpperCase)
 
 `org.apache.spark.SparkException: Task not serializable` exception occurs when you use a reference to an instance of a non-serializable class inside a transformation.
 
-[Functions on RDDs (such as `map`), Dataframes, Datasets, etc. need to be serialized so they can be sent to worker nodes. Serialization happens for you, but if the function makes a reference to a field in another object, the entire other object must be serialized](https://medium.com/onzo-tech/serialization-challenges-with-spark-and-scala-a2287cd51c54) section
+[Functions on RDDs (such as `map`), Dataframes, Datasets, etc. need to be serialized so they can be sent to worker nodes. Serialization happens for you, but if the function makes a reference to a field in another object, the entire other object must be serialized.](https://medium.com/onzo-tech/serialization-challenges-with-spark-and-scala-a2287cd51c54)
 
 ### Example 1
+
+```scala
+object Example {
+  val num = 1
+  def myFunc = testRdd.map(_ + num)
+}
+```
+
+This code fails since `num` is outside the scope of `myFunc()`. Since "the function makes a reference to a field in another object, the entire other object must be serialized."
+
+The code is fixed by adding `extends Serialiable` to the object:
 
 ```scala
 object Example extends Serializable {
@@ -1225,8 +1236,6 @@ object Example extends Serializable {
   def myFunc = testRdd.map(_ + num)
 }
 ```
-
-`map()` uses `num`, which is a reference to a field in `object Example`. This code works since we added `extends Serialiable` to the object.
 
 ### Example 2
 
@@ -1240,9 +1249,9 @@ object Example {
 }
 ```
 
-Instead of using `extends Serializable` to serialize the entire object, this code works since we added `val enclosedNum = num`.
+Instead of using `extends Serializable` to serialize the entire object, this code works since we added `val enclosedNum = num`. Now the entire object doesn't need to be serialized since `enclosedNum` is in the scope of `myFunc()`
 
-However, if we used `lazy val enclosedNum` instead, it wouldn't work. When `enclosedNum` is referenced, it still requires knowledge of `num` so it will still try to serialize `object Example`.
+However, if we used `lazy val enclosedNum = num` instead, it wouldn't work. When `enclosedNum` is referenced, it still requires knowledge of `num` so it will still try to serialize `object Example`.
 
 
 # References
