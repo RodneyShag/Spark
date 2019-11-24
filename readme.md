@@ -25,8 +25,9 @@
     - [Spark SQL](#spark-sql)
     - [Data Frames](#data-frames)
     - [Datasets](#datasets)
+- [User Defined Functions (UDFs)](#user-defined-functions-udfs)
+- [SparkException: Task not serializable](#sparkexception-task-not-serializable)
 - [References](#references)
-
 
 This repo is a concise summary and _replacement_ of the tutorials by IntelliPath and Coursera. Using the hyperlinks below is optional.
 
@@ -1154,6 +1155,95 @@ override def outputEncoder: Encoder[String] = Encoders.STRING
     - you need to fine-tune and manage low-level details of RDD computations
     - you have complex data types that cannot be serialized with `Encoder`s
 
+# [User Defined Functions (UDFs)](https://jaceklaskowski.gitbooks.io/mastering-spark-sql/spark-sql-udfs.html)
+
+User Defined Functions (UDFs) is a feature of Spark SQL to define new [Column](https://spark.apache.org/docs/1.6.1/api/java/org/apache/spark/sql/Column.html)-based functions for transforming [Datasets](https://spark.apache.org/docs/1.6.1/api/java/org/apache/spark/sql/Dataset.html)
+
+Instead of UDFs, use [higher-level standard Column-based functions](https://jaceklaskowski.gitbooks.io/mastering-spark-sql/spark-sql-functions.html) whenever possible since Spark SQL performs optimizations on them. Spark SQL does not perform optimizations on UDFs.
+
+Example of UDF:
+
+```scala
+val dataset = Seq((0, "hello"), (1, "world")).toDF("id", "text")
+
+val upper: String => String = _.toUpperCase // regular Scala function
+
+// Define a UDF that wraps the upper Scala function defined above.
+// You could instead define the function inside the udf but separating
+// Scala functions from Spark SQL's UDFs allows for easier testing.
+import org.apache.spark.sql.functions.udf
+val upperUDF = udf(upper)
+
+// Apply the UDF to change the source dataset
+dataset.withColumn("upper", upperUDF('text)).show
+```
+
+gives output of:
+
+```Scala
++---+-----+-----+
+| id| text|upper|
++---+-----+-----+
+|  0|hello|HELLO|
+|  1|world|WORLD|
++---+-----+-----+
+```
+
+Alternatively you could have defined the UDF like this:
+
+```scala
+val upper: String => String = _.toUpperCase
+val upperUDF = udf { s: String => s.toUpperCase }
+```
+
+or like this:
+
+```scala
+val upper: String => String = _.toUpperCase
+val upperUDF = udf[String, String](_.toUpperCase)
+```
+
+You can also register UDFs so you can use them in SQL queries:
+
+```scala
+val spark: SparkSession = ...
+spark.udf.register("myUpper", (input: String) => input.toUpperCase)
+```
+
+
+# SparkException: Task not serializable
+
+`org.apache.spark.SparkException: Task not serializable` exception occurs when you use a reference to an instance of a non-serializable class inside a transformation.
+
+[Functions on RDDs (such as `map`), Dataframes, Datasets, etc. need to be serialized so they can be sent to worker nodes. Serialization happens for you, but if the function makes a reference to a field in another object, the entire other object must be serialized](https://medium.com/onzo-tech/serialization-challenges-with-spark-and-scala-a2287cd51c54) section
+
+### Example 1
+
+```scala
+object Example extends Serializable {
+  val num = 1
+  def myFunc = testRdd.map(_ + num)
+}
+```
+
+`map()` uses `num`, which is a reference to a field in `object Example`. This code works since we added `extends Serialiable` to the object.
+
+### Example 2
+
+```scala
+object Example {
+  val num = 1
+  def myFunc = {
+    val enclosedNum = num
+    testRdd.map(_ + enclosedNum)
+  }
+}
+```
+
+Instead of using `extends Serializable` to serialize the entire object, this code works since we added `val enclosedNum = num`.
+
+However, if we used `lazy val enclosedNum` instead, it wouldn't work. When `enclosedNum` is referenced, it still requires knowledge of `num` so it will still try to serialize `object Example`.
+
 
 # References
 
@@ -1161,6 +1251,8 @@ override def outputEncoder: Encoder[String] = Encoders.STRING
 
 - YouTube: [Apache Spark Tutorial | Spark Tutorial for Beginners | Spark Big Data | Intellipaat](https://www.youtube.com/watch?v=GFC2gOL1p9k) - 0:00 to 33:20 was great. The rest was skipped since it taught very specific concepts with a mediocre explanation.
 - Coursera: [Big Data Analysis with Scala and Spark](https://www.coursera.org/learn/scala-spark-big-data?specialization=scala) - an amazing course. This repo is based on the course's lecture videos.
+- Article: [Spark SQL UDFs](https://jaceklaskowski.gitbooks.io/mastering-spark-sql/spark-sql-udfs.html) - good beginner summary of UDFs.
+- Article: [Serialization  with Spark and Scala](https://medium.com/onzo-tech/serialization-challenges-with-spark-and-scala-a2287cd51c54) - useful for understanding `SparkException: Task not serializable`. The 8 examples were good, but the "What's next" section was skipped since it got overly detailed and complicated.
 
 #### References - Deprecated
 
