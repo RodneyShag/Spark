@@ -186,7 +186,7 @@ b.foreachPartition(x => println(x.reduce(_ + _)))
 ### [Create a Data Frame from a List](https://youtu.be/GFC2gOL1p9k?t=1759)
 
 ```scala
-List(1, "mobile", 50000), (2, "shoes", 4500), (3, "TV", 70000))
+List((1, "mobile", 50000), (2, "shoes", 4500), (3, "TV", 70000))
 
 val productDF = product.toDF("pid", "product", "value") // column names
 productDF.show()
@@ -331,11 +331,11 @@ To know if a function is a _transformation_ or an _action_, we look at its retur
 
 ### Lazy evaluation resulting in efficiency
 
-Spark will analyze and optimize a chain of operations before executing it. This is a benefit of _lazy_ evaluation. In the code below, as soon as 10 elements of the filtered RDD have been computed, `firstLogsWIthErrors` is done.
+Spark will analyze and optimize a chain of operations before executing it. This is a benefit of _lazy_ evaluation. In the code below, as soon as 10 elements of the filtered RDD have been computed, `firstLogsWithErrors` is done.
 
 ```scala
 val lastYearsLogs: RDD[String] = ...
-val firstLogsWIthErrors = lastYearsLogs.filter(_.contains("ERROR")).take(10)
+val firstLogsWithErrors = lastYearsLogs.filter(_.contains("ERROR")).take(10)
 ```
 
 Spark (unlike Scala) can also combine the below `map` and `filter` so that it doesn't have to iterate through the list twice:
@@ -356,7 +356,7 @@ To tell Spark to cache an RDD in memory, simply call `persist()` or `cache()` on
 
 ```scala
 val lastYearsLogs: RDD[String] = ...
-val firstLogsWIthErrors = lastYearsLogs.filter(_.contains("ERROR")).persist()
+val logsWithErrors = lastYearsLogs.filter(_.contains("ERROR")).persist()
 val firstLogsWithErrors = logsWithErrors.take(10)
 val numErrors = logsWithErrors.count() // faster since we used .persist() above
 ```
